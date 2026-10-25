@@ -9,6 +9,7 @@ import com.example.userauthservice.services.AuthService;
 import com.example.userauthservice.services.JwtService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,12 +29,15 @@ public class UserController {
     }
 
     @PostMapping("/auth/signup")
-    public ResponseEntity<User> signUp(@RequestBody User user) {
-        User createdUser = authService.signUp(user.getEmail(), user.getPassHash());
-        if (createdUser == null) {
+    public ResponseEntity<UserDto> signUp(@Valid @RequestBody AuthRequest authRequest) {
+        User user = authService.signUp(authRequest.getEmail(), authRequest.getPassword());
+        if (user == null) {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
-        return new ResponseEntity<>(user, HttpStatus.CREATED);
+        UserDto dto = new UserDto();
+        dto.setEmail(user.getEmail());
+        dto.setRole(user.getRole());
+        return new ResponseEntity<>(dto, HttpStatus.CREATED);
     }
 
     @PostMapping("/auth/login")
